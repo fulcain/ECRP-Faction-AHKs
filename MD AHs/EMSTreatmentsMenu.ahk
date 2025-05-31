@@ -3,113 +3,124 @@ SetKeyDelay, 1
 SetWorkingDir %A_ScriptDir%
 #SingleInstance Force
 
+#Include lib\utils.ahk
+#Include treatments\broken_bones.ahk
+#Include treatments\bruises.ahk
+#Include treatments\burns.ahk
+#Include treatments\GSWs.ahk
+#Include treatments\concussion.ahk
+#Include treatments\cuts.ahk
+
+#Include components\stretcher.ahk
+#Include components\als_bag_items.ahk
+
 ;============================
-; Main Menu Hotkey (F11)
+; Main Menu Hotkey (Numpad9)
 ;============================
 
-F11::
+Numpad9::
 if (MenuCreated) {
     Menu, FullMenu, Delete
+    Menu, StretcherMenu, Delete
+    Menu, FracturesMenu, Delete
+    Menu, BurnsMenu, Delete
+    Menu, GSWMenu, Delete
 }
 
 MenuCreated := true
 
 ;============================
-Menu, FullMenu, Add, Check for injuries, CheckingPatient
-Menu, FullMenu, Add, Take Stretcher(s), PromptForStretcherAmount
-Menu, FullMenu, Add, Put down Stretcher(s), PromptPutDownStretcherAmount
-Menu, FullMenu, Add, Help patient into Stretcher, HelpPatientIntoStretcher
-Menu, FullMenu, Add, OPEN Fracture - broken bone, BorkenBoneOpenFracture
-Menu, FullMenu, Add  ; <-- Separator line
-Menu, FullMenu, Add, [X] Close Menu, CloseMenu
+; Create Submenus
 ;============================
 
+; -- Stretcher Actions Submenu
+Menu, StretcherMenu, Add, Take stretcher and put patient into it, TakeStretcherFromAmboAndBack
+Menu, StretcherMenu, Add, Take out one Stretcher, TakeOneStretcher
+Menu, StretcherMenu, Add, Put down one Stretcher, PutDownOneStretcher
+Menu, StretcherMenu, Add, Take Stretcher(s), PromptForStretcherAmount
+Menu, StretcherMenu, Add, Put down Stretcher(s), PromptPutDownStretcherAmount
+Menu, StretcherMenu, Add, Help patient into Stretcher, HelpPatientIntoStretcher
+
+; -- Fractures Submenu
+Menu, FracturesMenu, Add, OPEN Fracture - broken bone, BorkenBoneOpenFracture
+Menu, FracturesMenu, Add, CLOSED Fracture - Arm/Leg/CollarBone, BorkenBoneOClosedFractureArmLegCollarBone
+Menu, FracturesMenu, Add, CLOSED Fracture - Hip, BorkenBoneOClosedFractureHip
+Menu, FracturesMenu, Add, CLOSED Fracture - Ribs, BorkenBoneOClosedFractureRibs
+Menu, FracturesMenu, Add, CLOSED Fracture - Spine/Back, BorkenBoneOSpinalFracture
+
+; -- Burns Submenu
+Menu, BurnsMenu, Add, First degree burn, FirstDegreeBurn
+Menu, BurnsMenu, Add, Second and third degree burn, SecondAndThirdDegreeBurn
+
+; -- GSW Submenu
+Menu, GSWMenu, Add, GSW - Arm Or Leg, GSWArmOrLeg
+Menu, GSWMenu, Add, GSW - Stomach, GSWStomach
+Menu, GSWMenu, Add, GSW - Chest, GSWChest
+Menu, GSWMenu, Add, GSW - Head, GSWHead
+
+;============================
+; Main menu
+;============================
+
+Menu, FullMenu, Add, EMS TREATMENTS MENU, CloseMenu
+Menu, FullMenu, Add
+
+Menu, FullMenu, Add, Check for injuries, CheckingPatient
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Stretcher Actions, :StretcherMenu
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Ice Pack, TakingIcePacksAndWrappingTowelAround
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Fractures, :FracturesMenu
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Bruises, Bruises
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Burns, :BurnsMenu
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, GSWs, :GSWMenu
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Concussion, Concussion
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, Cuts, Cuts
+
+Menu, FullMenu, Add
+Menu, FullMenu, Add, [X] Close Menu, CloseMenu
+
+;============================
+; Show the Main Menu
+;============================
 CoordMode, Menu, Screen
 Menu, FullMenu, Show, % A_ScreenWidth / 2, % A_ScreenHeight / 2
 return
 
+;============================
+; Actions
+;============================
 
-;============================
-; Utility Functions
-;============================
-SendCommand(command) {
-    Send, t
-    Sleep, 50
-    Send, %command%
-    Send, {Enter}
-}
-
-;============================
-; Patient Actions
-;============================
 CheckingPatient() {
-    SendCommand("/me puts his ALS Bag down and looks over patient for injuries")
-    Sleep, 500
+    SendCommand("/me puts their ALS Bag down and looks over patient for injuries")
+    PauseBetweenCommands()
+    SendCommand("/anim medic")
+    PauseBetweenCommands()
     SendCommand("/do what do I see/find?")
-}
-
-HelpPatientIntoStretcher() {
-    SendCommand("/me assists the patient gently into the stretcher")
-}
-
-;============================
-; Stretcher Prompts
-;============================
-PromptForStretcherAmount() {
-    InputBox, amount, Take Stretchers, How many stretchers do you want to take?, , 200, 150
-    if (ErrorLevel)
-        return
-
-    if (amount == 1)
-        SendCommand("/me takes " . amount . " stretcher from the back of the ambulance")
-    else if (amount > 1)
-        SendCommand("/me takes " . amount . " stretchers from the back of the ambulance")
-    else
-        MsgBox, 48, Invalid Input, Ello, How are you gonna take 0 stretchers?
-}
-
-PromptPutDownStretcherAmount() {
-    InputBox, amount, Put Down Stretchers, How many stretchers do you have?, , 200, 150
-    if (ErrorLevel)
-        return
-
-    if (amount == 1)
-        SendCommand("/me puts down 1 stretcher onto the ground and opens it")
-    else if (amount > 1)
-        SendCommand("/me puts down " . amount . " stretchers onto the ground and opens them")
-    else
-        MsgBox, 48, Invalid Input, Ello, How are you gonna put down 0 stretchers?
-
-    Sleep, 500
-}
-
-;============================
-; Broken Bone Procedure
-;============================
-BorkenBoneOpenFracture() {
-    SendCommand("/me takes scissors out of ALS bag to cut clothing around the fracture")
-    Sleep, 2000
-
-    SendCommand("/me takes a bandage from ALS bag and loosely wraps the open wound with the bandage")
-    Sleep, 2000
-
-    SendCommand("/me takes 3 splints from ALS bag and puts one above the fracture, one below, and the third one on top of it to immobilize around the broken area")
-    Sleep, 2000
-
-    SendCommand("/me takes some ice packs and a large towel from ALS, pops the ice packs open and puts them inside the large towel and wraps the towel around the ice packs")
-    Sleep, 2000
-
-    SendCommand("/me takes the towel and puts it on the fracture to ease down the pain")
-    Sleep, 2000
-
-    SendCommand("/do would this help?")
+    PauseBetweenCommands()
+    Send t
+    Sleep 500
+    Send /stabilize
 }
 
 CloseMenu:
-; This will do nothing and just return, closing the menu
 Return
 
 ;============================
-; PAUSE / STOP HOTKEY (Ctrl + F11)
+; PAUSE / STOP HOTKEY (Ctrl + Numpad9)
 ;============================
-^F11::Pause, Toggle
+^Numpad9::Pause, Toggle

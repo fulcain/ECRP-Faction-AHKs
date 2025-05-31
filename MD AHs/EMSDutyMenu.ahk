@@ -11,11 +11,15 @@ SendCommand(command) {
     Send, {Enter}
 }
 
+PauseBetweenCommands(){
+	Sleep, 2000
+}
+
 ;============================
 ; Main Menu Hotkey (F10)
 ;============================
 
-F10::
+Numpad4::
 if (MenuCreated) {
     Menu, FullMenu, Delete
 }
@@ -23,11 +27,19 @@ if (MenuCreated) {
 MenuCreated := true
 
 ;============================
-Menu, FullMenu, Add, Duty clothes on, DutyClothesOn
-Menu, FullMenu, Add, Duty clothes off, DutyClothesOff
+Menu, FullMenu, Add, EMS DUTY MENU, CloseMenu
+Menu, FullMenu, Add  ; <-- Separator line
+
 Menu, FullMenu, Add, Start services radio + create unit, StartServiceRadio
+Menu, FullMenu, Add, End services radio + disband unit, EndServiceRadio
+Menu, FullMenu, Add  ; <-- Separator line
+Menu, FullMenu, Add, UNIFORMS -  Casual Attire, ChooseAttireClothes
+Menu, FullMenu, Add, UNIFORMS -  Sweater, ChooseSweaterClothes
+Menu, FullMenu, Add, UNIFORMS -  Fire, ChooseFireClothes
+Menu, FullMenu, Add, UNIFORMS -  Mountain Rescue, ChooseRescueClothes
+Menu, FullMenu, Add  ; <-- Separator line
 Menu, FullMenu, Add, Bodycam on, BodycamOn
-Menu, FullMenu, Add, Bodycam off, Bodycamoff
+
 Menu, FullMenu, Add  ; <-- Separator line
 Menu, FullMenu, Add, [X] Close Menu, CloseMenu
 ;============================
@@ -35,41 +47,139 @@ Menu, FullMenu, Add, [X] Close Menu, CloseMenu
 CoordMode, Menu, Screen
 Menu, FullMenu, Show, % A_ScreenWidth/2, % A_ScreenHeight/2
 return
-
-DutyClothesOn:
-    SendCommand("/me opens the clothing locker and grabs their uniform, putting it on")
-    Sleep, 1000
-Return
-
-DutyClothesOff:
-    SendCommand("/me opens the clothing locker and takes their uniform off, putting it back in the clothing locker")
-Return
-
 StartServiceRadio:
-    SendCommand("/r EMT Petrov is creating CHANGE and starting services, 10-8 lower pillbox. ")
+    SendCommand("/r EMT Petrov to dispatch, show me forming FIRE-27E and starting services, 10-8 lower pillbox. ")
     Sleep, 500
-    SendCommand("/Createunit CHANGE")
+    SendCommand("/createunit E-27")
+Return
+
+EndServiceRadio:
+    SendCommand("/r EMT Petrov to dispatch show me disbanding FIRE-27E and 10-9 ending services, stay safe out there! ")
+    Sleep, 500
+    SendCommand("/disbandunit")
 Return
 
 BodycamOn:
-    SendCommand("/me Grabs their bodycam from the locker and attaches the bodycam on their chest mount after turning it on")
+    SendCommand("/me grabs their bodycam from the locker and attaches the bodycam on their chest mount after turning it on")
     Sleep, 500
     SendCommand("/do the camera would turn on indicating that it's recording")
     Sleep, 500
     SendCommand("/time")
 Return
 
-BodycamOff:
-    SendCommand("/me grabs their bodycam from the chest mount, turns it off and safely stores it in their locker")
-    Sleep, 500
-    SendCommand("/time")
-Return
+ChooseAttireClothes() {
+	SendCommand("/fl")
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	SendInput {Up}
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	Loop, 8  ;
+    {
+        SendInput {Down}
+        Sleep, 200
+    }
+	
+	SendInput {Enter}
+	Sleep, 200
+	
+	SendInput {Esc}
+}
+
+ChooseFireClothes:
+	SendCommand("/fl")
+	
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	SendInput {Up}
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	SendInput {Up}
+	Sleep, 500
+	
+	Loop, 4  ;
+    {
+        SendInput {Up}
+        Sleep, 200
+    }
+	Sleep, 200
+	
+	SendInput {Enter}
+	Sleep, 200
+return
+
+ChooseRescueClothes:
+	SendCommand("/fl")
+	
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	SendInput {Up}
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	SendInput {Up}
+	Sleep, 500
+	
+	Loop, 13  ;
+    {
+        SendInput {Up}
+        Sleep, 200
+    }
+	
+	SendInput {Enter}
+	Sleep, 200
+	
+	SendInput {Esc}
+return
+
+ChooseSweaterClothes() {
+	SendCommand("/fl")
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	SendInput {Up}
+	Sleep, 500
+	
+	SendInput {Enter}
+	Sleep, 500
+	
+	Loop, 10  ;
+    {
+        SendInput {Down}
+        Sleep, 200
+    }
+	
+	SendInput {Enter}
+	Sleep, 200
+	
+	SendInput {Esc}
+}
+
 
 CloseMenu:
 ; This will do nothing and just return, closing the menu
 Return
 
 ;============================
-; PAUSE / STOP HOTKEY (Ctrl + F11)
+; PAUSE / STOP HOTKEY (Ctrl + Numpad4)
 ;============================
-^F11::Pause, Toggle
+^Numpad4::Pause, Toggle
